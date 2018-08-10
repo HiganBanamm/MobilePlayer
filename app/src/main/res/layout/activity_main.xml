@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/titlebar"/>
+
+    <!--定义一个帧布局-->
+    <FrameLayout
+        android:id="@+id/fl_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <!--RadioGroup继承的类是线性布局，所以也要设置方向-->
+    <!--android:padding="5dp" 设置内边距-->
+    <!--RadioGroup为我们提供了RadioButton单选按钮的容器
+        RadioButton通常放于RadioGroup容器中进行使用-->
+    <RadioGroup
+        android:id="@+id/rg_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#22000000"
+        android:orientation="horizontal"
+        android:padding="5dp">
+
+        <!--本地视频-->
+        <RadioButton
+            android:id="@+id/rb_video"
+            style="@style/bottom_tab_style"
+            android:drawableTop="@drawable/rb_video_selector"
+            android:text="本地视频" />
+
+        <!--本地音乐-->
+        <RadioButton
+            android:id="@+id/rb_audio"
+            style="@style/bottom_tab_style"
+            android:drawableTop="@drawable/rb_audio_selector"
+            android:text="本地音乐" />
+
+        <!--网络视频-->
+        <RadioButton
+            android:id="@+id/rb_net_video"
+            style="@style/bottom_tab_style"
+            android:drawableTop="@drawable/rb_net_video"
+            android:text="网络视频" />
+
+        <!-- 网络音乐-->
+        <RadioButton
+            android:id="@+id/rb_net_audio"
+            style="@style/bottom_tab_style"
+            android:drawableTop="@drawable/rb_net_audio"
+            android:text="本地视频" />
+
+    </RadioGroup>
+
+
+</LinearLayout>
