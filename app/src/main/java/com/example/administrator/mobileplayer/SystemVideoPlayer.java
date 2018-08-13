@@ -50,7 +50,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
     private Button btnVideoNext;
     private Button btnVideoSwichScreen;
     private Utils utils;
-    private ArrayList<MediaItem> mediaItems;
+
     private int position;
 
     /**
@@ -103,24 +103,111 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             // Handle clicks for btnExit
         } else if (v == btnVideoPre) {
             // Handle clicks for btnVideoPre
+            setPlayPre();
         } else if (v == btnVideoStartPause) {
             // Handle clicks for btnVideoStartPause
             if (videoView.isPlaying()) {
                 //如果视频在播放，设置为暂停
                 videoView.pause();
                 //同时按钮状态设置为播放状态
-                videoView.setBackgroundResource(R.drawable.btn_video_start_selector);
+                btnVideoStartPause.setBackgroundResource(R.drawable.btn_video_start_selector);
 
             } else {
                 //视频播放
                 videoView.start();
                 //按钮状态设置为暂停
-                videoView.setBackgroundResource(R.drawable.btn_video_pause_selector);
+                btnVideoStartPause.setBackgroundResource(R.drawable.btn_video_pause_selector);
             }
         } else if (v == btnVideoNext) {
             // Handle clicks for btnVideoNext
+            setPlayNext();
         } else if (v == btnVideoSwichScreen) {
             // Handle clicks for btnVideoSwichScreen
+        }
+    }
+
+    //点击上一个的时候
+    private void setPlayPre() {
+
+        if (mediaItems != null && mediaItems.size() > 0) {
+            //播放上一个
+            position--;
+            if (position >= 0) {
+                MediaItem mediaItem = mediaItems.get(position);
+                videoView.setVideoPath(mediaItem.getData());//设置播放地址，开始播放
+                tvName.setText(mediaItem.getName());//设置标题
+
+                //设置按钮的状态
+                setButtonState();
+            }
+
+        }
+
+        /*如果是第0个不需要退出
+        else if (uri != null) {
+            //退出播放器
+            finish();
+        }*/
+    }
+
+    //点击下一个的时候，调用该方法
+    private void setPlayNext() {
+        if (mediaItems != null && mediaItems.size() > 0) {
+            //播放下一个
+            position++;
+            if (position < mediaItems.size()) {
+                MediaItem mediaItem = mediaItems.get(position);
+                videoView.setVideoPath(mediaItem.getData());//设置播放地址，开始播放
+                tvName.setText(mediaItem.getName());//设置标题
+
+
+                //当播放到最后一个视频以后，设置提示并且按钮变灰
+                if (position == mediaItems.size() - 1) {
+                    Toast.makeText(SystemVideoPlayer.this, "已经播放到最后一个视频了", Toast.LENGTH_SHORT).show();
+                }
+
+                //设置按钮的状态
+                setButtonState();
+
+
+            }else {
+                finish();//当播放到最后一个时，退出播放器
+            }
+
+        } else if (uri != null) {
+            //退出播放器
+            finish();
+        }
+    }
+
+    //设置上一个和下一个按钮的状态
+    private void setButtonState() {
+        //有播放列表的情况
+        if (mediaItems != null && mediaItems.size() < 0) {
+            if (position == 0) {//如果是第一个视频
+                btnVideoPre.setEnabled(false);
+                btnVideoPre.setBackgroundResource(R.drawable.video_next_gray);
+
+            } else if (position == mediaItems.size() - 1) { //如果是最后一个视频
+                btnVideoNext.setEnabled(false); //首先不可点击
+                btnVideoNext.setBackgroundResource(R.drawable.btn_next_gray);
+            } else {//如果视频前后还有视频
+                btnVideoNext.setEnabled(true);
+                btnVideoNext.setBackgroundResource(R.drawable.btn_video_next_select);
+                btnVideoPre.setEnabled(true);
+                btnVideoPre.setBackgroundResource(R.drawable.btn_video_pre_select);
+            }
+
+        } else if (uri != null) {
+
+            btnVideoNext.setEnabled(false); //设置不可点击
+            btnVideoNext.setBackgroundResource(R.drawable.btn_next_gray);
+            btnVideoPre.setEnabled(false);
+            btnVideoPre.setBackgroundResource(R.drawable.video_next_gray);
+
+
+        } else {
+            Toast.makeText(this, "没有播放地址", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -156,6 +243,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             }
         }
     };
+    private ArrayList<MediaItem> mediaItems;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -174,28 +262,31 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
 
 
         //设置控制面板
-        videoView.setMediaController(new MediaController(this));
+        //videoView.setMediaController(new MediaController(this));
     }
 
     private void setData() {
         //当列表不等于空时
-        if (mediaItems !=null && mediaItems.size()>0){
+        if (mediaItems != null && mediaItems.size() > 0) {
             //得到数据
             MediaItem mediaItem = mediaItems.get(position);
             videoView.setVideoPath(mediaItem.getData());
             //设置视频的标题
             tvName.setText(mediaItem.getName());
-        }else if (uri!=null){
+        } else if (uri != null) {
             videoView.setVideoURI(uri);
             tvName.setText(uri.toString());
         }
-        videoView.setVideoURI(uri);
+        //videoView.setVideoURI(uri);
+        //当一进来的时候，也要设置一个前后按钮的状态
+        setButtonState();
+
     }
 
     private void getData() {
-        mediaItems =(ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
         uri = getIntent().getData();//得到一个地址的情况，一般来自文件夹浏览器，相册
-        position = getIntent().getIntExtra("position",0);//列表中的位置
+        mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        position = getIntent().getIntExtra("position", 0);//列表中的位置
         getIntent().getSerializableExtra("vediolist");
     }
 
@@ -224,6 +315,8 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
             tvDuration.setText(utils.stringForTime(duration));
             //2发消息
             handler.sendEmptyMessage(PROGRESS);
+
+            videoView.start();//开始播放
         }
     }
 
@@ -238,17 +331,18 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
     class MyOnCompletionListener implements MediaPlayer.OnCompletionListener {
         @Override
         public void onCompletion(MediaPlayer mp) {
-            Toast.makeText(SystemVideoPlayer.this, "播放完成", Toast.LENGTH_SHORT).show();
-            finish();
+            /*Toast.makeText(SystemVideoPlayer.this, "播放完成", Toast.LENGTH_SHORT).show();
+            finish();*/
+            setPlayNext();
         }
     }
 
-    class VideoOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener{
+    class VideoOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener {
         //当我们的手指滑动时，会引起SeekBar进度变化，会回调这个变化
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             //如果是用户引起的，fromUser就为true，如果不是用户引起的，就为false
-            if (fromUser){
+            if (fromUser) {
                 videoView.seekTo(progress);
             }
         }
@@ -258,6 +352,7 @@ public class SystemVideoPlayer extends Activity implements View.OnClickListener 
         public void onStartTrackingTouch(SeekBar seekBar) {
 
         }
+
         //当我们的手指离开时，回调该方法
         @Override
         public void onStopTrackingTouch(SeekBar seekBar) {

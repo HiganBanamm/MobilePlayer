@@ -81,7 +81,7 @@ public class VideoPager extends BasePager {
                 //传的是视频的列表，当点击下一个按钮时，可以切换到下一个视频
                 //以一个视频列表的方式
                 Intent intent = new Intent(context, SystemVideoPlayer.class);
-                //intent.setDataAndType(Uri.parse(mediaItem.getData()), "video/*");
+               // intent.setDataAndType(Uri.parse(mediaItem.getData()), "video/*");
                 Bundle bundle = new Bundle();
                 bundle.putSerializable("videolist",mediaItems);
                 intent.putExtras(bundle);
